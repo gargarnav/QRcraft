@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://qrcraft.fun"),
   title: "QRCraft - Professional QR Codes",
   description: "Beautifully simple, highly customizable QR codes without the enterprise price tag.",
   keywords: ["QR code", "QR code generator", "custom QR code", "QRCraft", "dynamic QR code"],
