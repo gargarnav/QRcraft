@@ -32,9 +32,12 @@ export const metadata: Metadata = {
     description: "Beautifully simple, highly customizable QR codes without the enterprise price tag.",
   },
   icons: {
-    icon: "/logo.svg",
-    shortcut: "/logo.svg",
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.svg', type: 'image/svg+xml' }
+    ],
     apple: "/logo.svg",
+    shortcut: "/favicon.ico"
   },
 };
 
