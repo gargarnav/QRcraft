@@ -17,6 +17,24 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "QRCraft - Professional QR Codes",
   description: "Beautifully simple, highly customizable QR codes without the enterprise price tag.",
+  keywords: ["QR code", "QR code generator", "custom QR code", "QRCraft", "dynamic QR code"],
+  openGraph: {
+    title: "QRCraft - Professional QR Codes",
+    description: "Beautifully simple, highly customizable QR codes without the enterprise price tag.",
+    url: "https://qrcraft.fun",
+    siteName: "QRCraft",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QRCraft - Professional QR Codes",
+    description: "Beautifully simple, highly customizable QR codes without the enterprise price tag.",
+  },
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
