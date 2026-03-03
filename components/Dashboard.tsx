@@ -164,12 +164,41 @@ export default function Dashboard() {
                             </div>
 
                             {((profile?.plan || 'free') === 'enterprise') ? (
-                                <div className="py-2.5 px-6 text-sm w-full md:w-auto text-success font-medium text-center">
-                                    You're on our best plan 🎉
-                                </div>
+                                <a href="mailto:sales@qrcraft.fun?subject=Enterprise Plan Inquiry" className="py-2.5 px-6 text-sm w-full md:w-auto text-white bg-white/10 hover:bg-white/20 font-medium text-center rounded-full transition-all">
+                                    Contact Sales
+                                </a>
+                            ) : ((profile?.plan === 'maker') || (profile?.plan === 'pro')) ? (
+                                <button
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        if (confirm("Are you sure you want to cancel your subscription? You'll retain access until the end of your billing cycle.")) {
+                                            const btn = e.currentTarget;
+                                            const originalText = btn.innerText;
+                                            btn.innerText = "Processing...";
+                                            btn.disabled = true;
+                                            try {
+                                                const res = await fetch('/api/payments/cancel', { method: 'POST' });
+                                                const data = await res.json();
+                                                if (res.ok) {
+                                                    alert(data.message);
+                                                } else {
+                                                    alert(data.error || "Failed to cancel subscription.");
+                                                }
+                                            } catch (err) {
+                                                alert("Network error.");
+                                            } finally {
+                                                btn.innerText = "Cancel Subscription";
+                                                btn.disabled = false;
+                                            }
+                                        }
+                                    }}
+                                    className="py-2.5 px-6 text-sm w-full md:w-auto text-center rounded-full font-bold transition-all border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+                                >
+                                    Cancel Subscription
+                                </button>
                             ) : (
-                                <Link href="/pricing" className={`py-2.5 px-6 text-sm w-full md:w-auto text-center rounded-full font-bold transition-all shadow-lg ${(profile?.plan === 'pro') ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-primary text-white hover:bg-primary-dim shadow-primary/20'}`}>
-                                    {(profile?.plan === 'pro') ? 'Upgrade to Enterprise' : (profile?.plan === 'maker') ? 'Upgrade to Pro' : 'Upgrade to Maker'}
+                                <Link href="/pricing" className={`py-2.5 px-6 text-sm w-full md:w-auto text-center rounded-full font-bold transition-all shadow-lg ${((profile?.plan || 'free') === 'free') ? 'bg-primary text-white hover:bg-primary-dim shadow-primary/20' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                                    Upgrade to Maker
                                 </Link>
                             )}
                         </div>

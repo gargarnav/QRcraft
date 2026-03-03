@@ -2,9 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
+import PaywallModal from './PaywallModal';
 
 export default function Pricing() {
     const [isYearly, setIsYearly] = useState(false);
+    const { isSignedIn } = useUser();
+
+    const [showPaywall, setShowPaywall] = useState(false);
+    const [targetPlan, setTargetPlan] = useState<string>('maker');
+
+    const handleUpgradeClick = (e: React.MouseEvent, planName: string) => {
+        if (isSignedIn) {
+            e.preventDefault();
+            setTargetPlan(planName.toLowerCase());
+            setShowPaywall(true);
+        }
+    };
 
     const plans = [
         {
@@ -29,7 +43,8 @@ export default function Pricing() {
             watermark: true,
             ctaText: "Get Started Free",
             ctaLink: "/auth/signup",
-            highlight: false
+            highlight: false,
+            isUpgradeBtn: false
         },
         {
             name: "Maker",
@@ -57,8 +72,9 @@ export default function Pricing() {
             ],
             watermark: false,
             ctaText: "Start Maker Plan",
-            ctaLink: "#",
-            highlight: false
+            ctaLink: "/auth/signup",
+            highlight: false,
+            isUpgradeBtn: true
         },
         {
             name: "Pro",
@@ -87,8 +103,9 @@ export default function Pricing() {
             ],
             watermark: false,
             ctaText: "Start Pro Plan",
-            ctaLink: "#",
-            highlight: true
+            ctaLink: "/auth/signup",
+            highlight: true,
+            isUpgradeBtn: true
         },
         {
             name: "Enterprise",
@@ -113,8 +130,9 @@ export default function Pricing() {
             notIncluded: [],
             watermark: false,
             ctaText: "Contact Sales",
-            ctaLink: "mailto:sales@qrcraft.fun",
-            highlight: false
+            ctaLink: "mailto:sales@qrcraft.fun?subject=Enterprise Plan Inquiry",
+            highlight: false,
+            isUpgradeBtn: false
         }
     ];
 
@@ -147,6 +165,14 @@ export default function Pricing() {
 
     return (
         <section className="py-24 bg-dark relative overflow-hidden">
+            {/* Paywall Bindings */}
+            <PaywallModal
+                isOpen={showPaywall}
+                onClose={() => setShowPaywall(false)}
+                targetPlan={targetPlan}
+                billing={isYearly ? 'yearly' : 'monthly'}
+            />
+
             {/* Glow Background */}
             <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full pointer-events-none mix-blend-screen" />
             <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-accent/10 blur-[150px] rounded-full pointer-events-none mix-blend-screen" />
@@ -223,7 +249,8 @@ export default function Pricing() {
 
                             <a
                                 href={plan.ctaLink}
-                                className={`w-full py-3.5 rounded-full font-bold text-sm text-center mb-8 transition-colors ${plan.highlight ? 'bg-primary text-white hover:bg-primary-dim shadow-lg shadow-primary/20' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
+                                onClick={(e) => plan.isUpgradeBtn ? handleUpgradeClick(e, plan.name) : undefined}
+                                className={`w-full block py-3.5 rounded-full font-bold text-sm text-center mb-8 transition-colors ${plan.highlight ? 'bg-primary text-white hover:bg-primary-dim shadow-lg shadow-primary/20' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
                             >
                                 {plan.ctaText}
                             </a>

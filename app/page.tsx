@@ -12,7 +12,7 @@ export default function Home() {
   const { config, updateConfig } = useQRConfig()
   const [showScrollTop, setShowScrollTop] = useState(false)
 
-  // Stripe Integration parameters logic optionally kept
+  // Payment integration parameters logic optionally kept
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)

@@ -155,7 +155,7 @@ export default function About() {
                     <span className="text-xs font-bold text-textMuted uppercase tracking-[0.2em] mb-12 block">Built With</span>
 
                     <div className="flex flex-wrap justify-center gap-4">
-                        {['React', 'Vite', 'Tailwind CSS', 'qr-code-styling', 'Stripe', 'Vercel'].map(tech => (
+                        {['React', 'Vite', 'Tailwind CSS', 'qr-code-styling', 'Razorpay', 'Vercel'].map(tech => (
                             <div key={tech} className="w-28 h-24 bg-card border border-white/5 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 group">
                                 <div className="w-8 h-8 rounded-full bg-white/5 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
                                     <div className="w-2 h-2 rounded-full bg-textMuted group-hover:bg-primary transition-colors" />

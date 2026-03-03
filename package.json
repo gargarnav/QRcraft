@@ -19,6 +19,7 @@
     "nanoid": "^5.1.6",
     "next": "16.1.6",
     "qr-code-styling": "^1.9.2",
+    "razorpay": "^2.9.6",
     "react": "19.2.3",
     "react-color": "^2.19.3",
     "react-dom": "19.2.3",

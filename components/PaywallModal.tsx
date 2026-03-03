@@ -4,11 +4,26 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/YOUR_LINK_HERE"
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
-export default function PaywallModal({ isOpen, onClose, message, targetPlan }: any) {
+const loadRazorpay = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement('script')
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+        script.onload = () => resolve(true)
+        script.onerror = () => resolve(false)
+        document.body.appendChild(script)
+    })
+}
+
+export default function PaywallModal({ isOpen, onClose, message, targetPlan, billing = 'monthly' }: any) {
     const { user, isLoaded } = useUser()
     const [profile, setProfile] = useState<any>(null)
+    const [isProcessing, setIsProcessing] = useState(false)
 
     useEffect(() => {
         if (!isOpen || !isLoaded || !user) return;
@@ -28,9 +43,9 @@ export default function PaywallModal({ isOpen, onClose, message, targetPlan }: a
 
     let nextPlanData = {
         name: "Maker",
-        price: "$2.99",
-        subtitle: "one-time · no subscription",
-        buttonText: "Start Maker Plan — $2.99",
+        price: "₹299",
+        subtitle: "per month",
+        buttonText: "Start Maker Plan — ₹299/mo",
         features: [
             "25 static QR codes per month",
             "10 dynamic QR codes total",
@@ -42,9 +57,9 @@ export default function PaywallModal({ isOpen, onClose, message, targetPlan }: a
     if (displayPlan === 'pro') {
         nextPlanData = {
             name: "Pro",
-            price: "$6.99",
+            price: "₹699",
             subtitle: "per month",
-            buttonText: "Start Pro Plan — $6.99/mo",
+            buttonText: "Start Pro Plan — ₹699/mo",
             features: [
                 "Unlimited static QR codes",
                 "Unlimited dynamic QR codes",
@@ -64,6 +79,70 @@ export default function PaywallModal({ isOpen, onClose, message, targetPlan }: a
                 "White-label QR codes",
                 "Dedicated account manager"
             ]
+        }
+    }
+
+    const handleUpgrade = async () => {
+        if (displayPlan === 'enterprise') {
+            window.location.href = "mailto:sales@qrcraft.fun?subject=Enterprise Plan Inquiry";
+            return;
+        }
+
+        setIsProcessing(true);
+        const res = await loadRazorpay();
+        if (!res) {
+            alert('Razorpay SDK failed to load. Are you online?');
+            setIsProcessing(false);
+            return;
+        }
+
+        try {
+            const createRes = await fetch('/api/payments/create-subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: displayPlan, billing })
+            });
+            const data = await createRes.json();
+
+            if (!createRes.ok) throw new Error(data.error);
+
+            const options = {
+                key: data.key,
+                subscription_id: data.subscriptionId,
+                name: 'QRCraft',
+                description: `${nextPlanData.name} Plan - ${billing}`,
+                image: '/logo.svg', // Ensure you have a logo in public dir
+                handler: async function (response: any) {
+                    await fetch('/api/payments/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_subscription_id: response.razorpay_subscription_id,
+                            razorpay_signature: response.razorpay_signature,
+                            plan: displayPlan,
+                            billing
+                        })
+                    });
+                    window.location.reload();
+                },
+                prefill: {
+                    name: user?.fullName || "",
+                    email: user?.primaryEmailAddress?.emailAddress || ""
+                },
+                theme: { color: '#6366f1' }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response: any) {
+                alert(`Payment Failed: ${response.error.description}`);
+            });
+            rzp.open();
+        } catch (error) {
+            console.error(error);
+            alert("Something went wrong initializing checkout.");
+        } finally {
+            setIsProcessing(false);
         }
     }
 
@@ -107,9 +186,9 @@ export default function PaywallModal({ isOpen, onClose, message, targetPlan }: a
                         <span className="text-textMuted text-[13px] font-medium">{nextPlanData.subtitle}</span>
                     </div>
 
-                    <a href={STRIPE_PAYMENT_LINK} className="block w-full btn-primary text-center py-4 text-base shadow-glow-strong">
-                        {nextPlanData.buttonText}
-                    </a>
+                    <button onClick={handleUpgrade} disabled={isProcessing} className="block w-full btn-primary text-center py-4 text-base shadow-glow-strong disabled:opacity-50">
+                        {isProcessing ? "Prepping Checkout..." : nextPlanData.buttonText}
+                    </button>
 
                     <button onClick={onClose} className="block w-full text-center text-sm text-textMuted hover:text-white transition-colors py-2">
                         Just browsing? Keep using current plan
